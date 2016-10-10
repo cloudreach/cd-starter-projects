@@ -3,6 +3,7 @@
 ## Links
 
 ## QuickStart and Tips
+* Supports duck typing and strongly typed variables
 * String `def disString='asdf'` or `def disString="asdf"`
 * List `def disList=[1,2,3]`
 * Map ```def disMap=[a:'1',b:'2']```
