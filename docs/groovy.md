@@ -1,6 +1,7 @@
 # Groovy
 
 ## Links
+* http://groovy-lang.org/documentation.html#gettingstarted
 
 ## QuickStart and Tips
 * Supports duck typing and strongly typed variables
