@@ -3,43 +3,48 @@
 // ./gradlew build
 // http://jenkins.dev.sterlingbackcheck.com/job/Training/job/Jai_TEST/pipeline-syntax/globals ENV Variables
 
+def applicationName="Application-ABC"
+
 node('linux') {
     git url: 'http://github.com/Relus-Technologies/cd-starter-projects'
 
-    stage 'TestStage1'
-    sh """#!/bin/bash
+    stage "TestStage1"
+    withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'testCreds', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME']]) {
+        sh """#!/bin/bash
+            echo ASDF > abc-\${JOB_BASE_NAME}.txt
+            echo \$USERNAME \$PASSWORD
+            pwd
+           """
+    }
 
-echo ASDF > abc-${env.JOB_NAME}.txt
-pwd
-"""
-    stash name: 'testArtifact', includes: "abc-${env.JOB_NAME}.txt"
+    stash name: 'testArtifact', includes: "abc-${env.JOB_BASE_NAME}.txt"
     step(
             [
-                    $class: 'S3BucketPublisher',
+                    $class                              : 'S3BucketPublisher',
                     dontWaitForConcurrentBuildCompletion: false,
-                    entries: [
+                    entries                             : [
                             [
-                                    bucket: 'relus-temp',
-                                    excludedFile: '',
-                                    flatten: false,
-                                    gzipFiles: false,
-                                    keepForever: false,
-                                    managedArtifacts: true,
-                                    noUploadOnFailure: false,
-                                    selectedRegion: 'us-east-1',
-                                    sourceFile: "abc-${env.JOB_NAME}.txt",
-                                    storageClass: 'STANDARD',
-                                    uploadFromSlave: true,
+                                    bucket                 : 'relus-temp',
+                                    excludedFile           : '',
+                                    flatten                : false,
+                                    gzipFiles              : false,
+                                    keepForever            : false,
+                                    managedArtifacts       : true,
+                                    noUploadOnFailure      : false,
+                                    selectedRegion         : 'us-east-1',
+                                    sourceFile             : "abc-${env.JOB_BASE_NAME}.txt",
+                                    storageClass           : 'STANDARD',
+                                    uploadFromSlave        : true,
                                     useServerSideEncryption: true
                             ]
                     ],
-                    profileName: 'ArtifactPublisher ',
-                    userMetadata: []]
+                    profileName                         : 'ArtifactPublisher ',
+                    userMetadata                        : []]
     )
 
 }
 
-node('linux'){
+node('linux') {
     stage 'TestStage2'
     sh "pwd"
     unstash name: 'testArtifact'

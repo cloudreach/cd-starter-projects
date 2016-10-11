@@ -1,0 +1,26 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Sample CFT Template",
+  "Parameters": {
+  },
+  "Resources": {
+    "MyElbSg":{
+
+    },
+    "MyElb": {
+
+    },
+    "MyEc2Sg":{
+
+    },
+    "MyAsg": {
+
+    },
+    "MyAsgLaunchConfig":{
+
+    }
+  },
+  "Outputs":{
+
+  }
+}
