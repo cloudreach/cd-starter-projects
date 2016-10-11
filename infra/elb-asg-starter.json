@@ -36,6 +36,11 @@
             "Protocol": "tcp"
           }
         ],
+        "Instances": [
+          {
+            "Ref": "MyEc2"
+          }
+        ],
         "SecurityGroups": [
           {
             "Ref": "MyElbSg"
@@ -49,6 +54,47 @@
           {
             "Key": "Name",
             "Value": "FerzanTrainingLb"
+          }
+        ]
+      }
+    },
+    "MyEc2Sg": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Ferzan Ec2 SG",
+        "SecurityGroupIngress": {
+          "SourceSecurityGroupId": {
+            "Ref": "MyElbSg"
+          },
+          "FromPort": "8080",
+          "ToPort": "8080",
+          "IpProtocol": "tcp"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "FerzanSG"
+          }
+        ],
+        "VpcId": "vpc-4e81b92a"
+      }
+    },
+    "MyEc2": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "ImageId": "ami-c481fad3",
+        "InstanceType": "t2.micro",
+        "KeyName": "sterling-training",
+        "SecurityGroupIds": [
+          {
+            "Ref": "MyEc2Sg"
+          }
+        ],
+        "SubnetId": "subnet-3f67d715",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "FerzanTrainingEc2"
           }
         ]
       }
