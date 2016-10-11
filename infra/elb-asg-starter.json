@@ -1,26 +1,57 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
   "Description": "Sample CFT Template",
-  "Parameters": {
-  },
   "Resources": {
-    "MyElbSg":{
-
+    "MyElbSg": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Ferzan SG",
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": "0.0.0.0/32",
+            "FromPort": 80,
+            "IpProtocol": "tcp",
+            "ToPort": 80
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "FerzanSG"
+          }
+        ],
+        "VpcId": "vpc-4e81b92a"
+      }
     },
     "MyElb": {
-
-    },
-    "MyEc2Sg":{
-
-    },
-    "MyAsg": {
-
-    },
-    "MyAsgLaunchConfig":{
-
+      "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+      "Properties": {
+        "CrossZone": true,
+        "LoadBalancerName": "FerzanTrainingLb",
+        "Listeners": [
+          {
+            "InstancePort": "8080",
+            "InstanceProtocol": "tcp",
+            "LoadBalancerPort": "80",
+            "Protocol": "tcp"
+          }
+        ],
+        "SecurityGroups": [
+          {
+            "Ref": "MyElbSg"
+          }
+        ],
+        "Subnets": [
+          "subnet-3c0bbc16",
+          "subnet-71532c4c"
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "FerzanTrainingLb"
+          }
+        ]
+      }
     }
-  },
-  "Outputs":{
-
   }
 }
