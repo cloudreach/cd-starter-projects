@@ -1,6 +1,20 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
   "Description": "Sample CFT Template",
+  "Parameters": {
+    "VpcStackName": {
+      "Description": "Vpc Stack Name ex. vpc-dev",
+      "Default": "vpc-dev",
+      "Type": "String"
+    }
+  },
+  "Mappings": {
+    "Variables": {
+      "AMIS": {
+        "useast": "ami-c481fad3"
+      }
+    }
+  },
   "Resources": {
     "MyElbSg": {
       "Type": "AWS::EC2::SecurityGroup",
@@ -20,7 +34,19 @@
             "Value": "FerzanSG"
           }
         ],
-        "VpcId": "vpc-4e81b92a"
+        "VpcId": {
+          "Fn::ImportValue": {
+            "Fn::Join": [
+              "-",
+              [
+                {
+                  "Ref": "VpcStackName"
+                },
+                "VpcId"
+              ]
+            ]
+          }
+        }
       }
     },
     "MyElb": {
@@ -34,11 +60,6 @@
             "InstanceProtocol": "tcp",
             "LoadBalancerPort": "80",
             "Protocol": "tcp"
-          }
-        ],
-        "Instances": [
-          {
-            "Ref": "MyEc2"
           }
         ],
         "SecurityGroups": [
@@ -79,23 +100,64 @@
         "VpcId": "vpc-4e81b92a"
       }
     },
-    "MyEc2": {
-      "Type": "AWS::EC2::Instance",
+    "MyAsgLaunchConfig": {
+      "Type": "AWS::AutoScaling::LaunchConfiguration",
       "Properties": {
-        "ImageId": "ami-c481fad3",
+        "ImageId": {
+          "Fn::FindInMap": [
+            "Variables",
+            "AMIS",
+            "useast"
+          ]
+        },
         "InstanceType": "t2.micro",
         "KeyName": "sterling-training",
-        "SecurityGroupIds": [
+        "SecurityGroups": [
           {
             "Ref": "MyEc2Sg"
           }
+        ]
+      }
+    },
+    "MyAsg": {
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
+      "Properties": {
+        "LaunchConfigurationName": {
+          "Ref": "MyAsgLaunchConfig"
+        },
+        "LoadBalancerNames": [
+          {
+            "Ref": "MyElb"
+          }
         ],
-        "SubnetId": "subnet-3f67d715",
+        "MaxSize": "1",
+        "MinSize": "1",
         "Tags": [
           {
             "Key": "Name",
-            "Value": "FerzanTrainingEc2"
+            "Value": "FerzanAsg",
+            "PropagateAtLaunch": true
           }
+        ],
+        "VPCZoneIdentifier": [
+          "subnet-3c0bbc16",
+          "subnet-71532c4c"
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "FerzanElbName": {
+      "Value": {
+        "Ref": "MyElb"
+      }
+    },
+    "MapValue": {
+      "Value": {
+        "Fn::FindInMap": [
+          "Variables",
+          "AMIS",
+          "useast"
         ]
       }
     }

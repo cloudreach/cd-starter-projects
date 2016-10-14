@@ -7,6 +7,3 @@
 * S3
 * AMI
 * Security Groups
-
-can scale based on sqs messages
-what are the public ami's
