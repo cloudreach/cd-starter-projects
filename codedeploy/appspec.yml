@@ -1,0 +1,8 @@
+version: 0.0
+os: linux
+files:
+  - source: \
+    destination: c:\deploy
+hooks:
+  AfterInstall:
+    - location: test.bat
