@@ -2,6 +2,9 @@
 
 ## Configuration
 * Can be managed by administrator
+* Organization/Folders
+* Views/Security
+* Credentials
 ## Plugins
 * Huge plugin eco-system
 * Common plugins aws, beanstalk, git
@@ -19,3 +22,5 @@
     * https://github.com/jenkinsci/pipeline-plugin/blob/master/TUTORIAL.md#triggering-manual-loading
 * Jenkins Pipeline Best Practices
     * https://github.com/jenkinsci/pipeline-examples/blob/master/docs/BEST_PRACTICES.md
+* Jenkins Plugin Compatibility with pipeline
+    * https://github.com/jenkinsci/pipeline-plugin/blob/master/COMPATIBILITY.md
