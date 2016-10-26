@@ -2,9 +2,170 @@
   "AWSTemplateFormatVersion": "2010-09-09",
   "Description": "Sample CFT Template",
   "Parameters": {
-  },
-  "Mappings": {
+    "VpcStackName": {
+      "Type": "String",
+      "Default": "vpc-dev"
+    },
+    "Environment": {
+      "Type": "String",
+      "Default": "dev",
+      "AllowedValues": [
+        "dev",
+        "qa"
+      ]
+    }
   },
   "Resources": {
+    "MyElbSg": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Ferzan SG",
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": "0.0.0.0/32",
+            "FromPort": 80,
+            "IpProtocol": "tcp",
+            "ToPort": 80
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "FerzanSG"
+          }
+        ],
+        "VpcId": "vpc-f40cd990"
+      }
+    },
+    "MyElb": {
+      "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+      "Properties": {
+        "CrossZone": true,
+        "LoadBalancerName": "FerzanTrainingLb",
+        "Listeners": [
+          {
+            "InstancePort": "8080",
+            "InstanceProtocol": "tcp",
+            "LoadBalancerPort": "80",
+            "Protocol": "tcp"
+          }
+        ],
+        "SecurityGroups": [
+          {
+            "Ref": "MyElbSg"
+          }
+        ],
+        "Subnets": [
+          "subnet-c0828099",
+          "subnet-091dec7f"
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "FerzanTrainingLb"
+          }
+        ]
+      }
+    },
+    "MyEc2Sg": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Ferzan Ec2 SG",
+        "SecurityGroupIngress": {
+          "SourceSecurityGroupId": {
+            "Ref": "MyElbSg"
+          },
+          "FromPort": "8080",
+          "ToPort": "8080",
+          "IpProtocol": "tcp"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "FerzanSG"
+          }
+        ],
+        "VpcId": "vpc-f40cd990"
+      }
+    },
+    "MyAsgLaunchConfig": {
+      "Type": "AWS::AutoScaling::LaunchConfiguration",
+      "Properties": {
+        "ImageId": "ami-b04e92d0",
+        "InstanceType": "t2.micro",
+        "KeyName": "ferzan-test",
+        "IamInstanceProfile": "arn:aws:iam::882038671278:instance-profile/iam-roles-profiles-SbcCodeDeployEc2InstanceProfile-113FT4UP0WU2X",
+        "SecurityGroups": [
+          {
+            "Ref": "MyEc2Sg"
+          }
+        ],
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": [
+              "",
+              [
+                "#!/bin/bash\n",
+                "yum update\n",
+                "yum install ruby\n",
+                "yum install wget\n",
+                "cd /home/ec2-user\n",
+                "wget https://bucket-name.s3.amazonaws.com/latest/install\n",
+                "chmod +x ./install\n",
+                "./install auto"
+              ]
+            ]
+          }
+        }
+      }
+    },
+    "MyAsg": {
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
+      "Properties": {
+        "LaunchConfigurationName": {
+          "Ref": "MyAsgLaunchConfig"
+        },
+        "LoadBalancerNames": [
+          {
+            "Ref": "MyElb"
+          }
+        ],
+        "MaxSize": "1",
+        "MinSize": "1",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "FerzanAsg",
+            "PropagateAtLaunch": true
+          }
+        ],
+        "VPCZoneIdentifier": [
+          "subnet-c582809c",
+          "subnet-f41dec82"
+        ]
+      }
+    },
+    "CodeDeployApplication": {
+      "Type": "AWS::CodeDeploy::Application",
+      "Properties": {
+        "ApplicationName": "FerzanTesting123"
+      }
+    },
+    "CodeDeployGroup": {
+      "Type": "AWS::CodeDeploy::DeploymentGroup",
+      "Properties": {
+        "ApplicationName": {
+          "Ref": "CodeDeployApplication"
+        },
+        "AutoScalingGroups": [
+          {
+            "Ref": "MyAsg"
+          }
+        ],
+        "DeploymentConfigName": "CodeDeployDefault.AllAtOnce",
+        "DeploymentGroupName": "FerzanDev",
+        "ServiceRoleArn": "arn:aws:iam::882038671278:role/iam-roles-profiles-CodeDeployElbServiceRole-1JNIBA8FQDGEY"
+      }
+    }
   }
 }

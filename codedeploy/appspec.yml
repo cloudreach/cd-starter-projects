@@ -1,8 +1,8 @@
 version: 0.0
 os: linux
 files:
-  - source: \
-    destination: c:\deploy
+  - source: /
+    destination: /tmp
 hooks:
-  AfterInstall:
-    - location: test.bat
+  BeforeInstall:
+    - location: codedeploy-scripts/before.sh
